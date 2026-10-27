@@ -8,15 +8,17 @@ Khôi và Trí có thể tải ZIP hoặc clone repo, build trên máy mình r�
 
 Cần CMake từ 3.20, compiler **và thư viện chuẩn** hỗ trợ C++20 (`std::barrier`, `std::latch`), cùng Python 3.9 trở lên để chạy script thu số liệu. Phần C++ không phụ thuộc Python. CMake sẽ kiểm tra khả năng hỗ trợ barrier ngay khi cấu hình.
 
-Mở terminal tại thư mục chứa `CMakeLists.txt`:
+Trên **WSL/Linux**, mở terminal tại thư mục chứa `CMakeLists.txt`:
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release --parallel
-ctest --test-dir build -C Release --output-on-failure
+cmake -B build -S .
+cmake --build build -j
+ctest --test-dir build --output-on-failure
 ```
 
-Trên Windows, dùng Developer PowerShell của Visual Studio hoặc terminal đã có compiler MinGW và CMake trong `PATH`. Với MinGW, thêm `-G "MinGW Makefiles"` ở lệnh cấu hình đầu tiên. Không dùng lại cùng thư mục build khi đổi compiler hoặc generator.
+Dự án mặc định dùng **Release**. Lệnh đầu cấu hình lần đầu; sau đó có thể build lại bằng đúng `cmake --build build -j`. Trong WSL dùng CMake và compiler Linux. Nếu thư mục `build` đã được tạo bằng Windows/MinGW, dùng thư mục mới như `build-wsl` ở cả ba lệnh, rồi thêm `--build-dir build-wsl` khi chạy script.
+
+Trên Windows chạy trực tiếp, dùng Developer PowerShell của Visual Studio hoặc terminal đã có compiler MinGW và CMake trong `PATH`. Với MinGW, thêm `-G "MinGW Makefiles"` ở lệnh cấu hình đầu tiên. Visual Studio dùng `cmake --build build --config Release -j` và `ctest --test-dir build -C Release --output-on-failure`. Không dùng lại cùng thư mục build khi đổi compiler hoặc generator.
 
 Trên macOS/Linux, dùng compiler C++20 và thư viện chuẩn tương ứng. Nếu CMake báo thiếu `std::barrier`/`std::latch`, cần đổi hoặc cập nhật toolchain rồi cấu hình trong thư mục build mới. Chỉ bật `-std=c++20` chưa đủ khi thư viện chuẩn chưa hỗ trợ.
 
@@ -27,6 +29,14 @@ Bộ kiểm tra có **8 test CTest**: một test chạy 25 trường hợp kiể
 Cắm nguồn nếu dùng laptop, chọn và ghi lại chế độ nguồn, đóng chương trình nặng; chạy lần lượt từng benchmark. Xem số **lõi vật lý** trong Task Manager (Windows), System Information (macOS) hoặc `lscpu` (Linux). Không lấy số luồng logic làm số lõi vật lý.
 
 Ví dụ máy có **8 lõi vật lý**; thay `8`, tên máy và mô tả nguồn bằng thông tin thực tế:
+
+**WSL:**
+
+```sh
+python3 scripts/run_benchmarks.py --machine tri-wsl --physical-cores 8 --power-mode "AC, Balanced; WSL"
+```
+
+Với WSL, xem số lõi vật lý trong Task Manager của Windows và ghi rõ đang chạy WSL khi gửi kết quả.
 
 **Windows (PowerShell):**
 
@@ -82,7 +92,7 @@ Xem lại thông tin CPU, RAM và chế độ nguồn đã đúng chưa; bổ su
 
 ## 4. Chạy riêng và kiểm tra nhanh
 
-Trên macOS/Linux hoặc Windows MinGW:
+Trên WSL/macOS/Linux hoặc Windows MinGW:
 
 ```sh
 ./build/bin/bench_barriers --help
