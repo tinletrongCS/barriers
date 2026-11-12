@@ -28,7 +28,7 @@ public:
           sense_(false),
           use_backoff_(use_backoff) {
         if (num_threads == 0) {
-            throw std::invalid_argument("Cần ít nhất 1 luồng tham gia");
+            throw std::invalid_argument("A barrier needs at least one participating thread");
         }
     }
 
@@ -38,11 +38,11 @@ public:
         if (position == 1)
         {
             count_.store(total_threads_, std::memory_order_relaxed);
-            // Đảo giá trị cờ mỗi khi có đủ N luồng đến:sang pha kế tiếp
+            // All N threads have arrived: flip the sense to start the next phase
             sense_.store(my_sense, std::memory_order_release);
         }
         else {
-            // nếu có truyền tham số dùng thì mới dùng
+            // Back off only if the caller asked for it
             if (use_backoff_)
             {
                 ExponentialBackoff backoff;
